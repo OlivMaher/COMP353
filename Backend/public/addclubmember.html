@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add Club Member</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f2f2f2; }
+    form { max-width: 600px; margin: 0 auto; }
+    label { display: block; margin: 10px 0 5px; }
+    input, select { width: 100%; padding: 8px; box-sizing: border-box; }
+    button { margin-top: 15px; padding: 10px; background-color: #007acc; color: white; border: none; cursor: pointer; }
+    nav { text-align: center; margin-bottom: 20px; }
+    nav a { text-decoration: none; color: #007acc; margin: 0 10px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="clubmembers.html">Club Members</a>
+  </nav>
+  <h1>Add New Club Member</h1>
+  <form id="addClubMemberForm">
+    <label for="first_name">First Name:</label>
+    <input type="text" id="first_name" name="first_name" required>
+
+    <label for="last_name">Last Name:</label>
+    <input type="text" id="last_name" name="last_name" required>
+
+    <label for="age">Age:</label>
+    <input type="number" id="age" name="age" min="11" max="18" required>
+
+    <label for="date_of_birth">Date of Birth:</label>
+    <input type="date" id="date_of_birth" name="date_of_birth" required>
+
+    <label for="height">Height:</label>
+    <input type="number" id="height" name="height" min="0" required>
+
+    <label for="weight">Weight:</label>
+    <input type="number" id="weight" name="weight" min="0" required>
+
+    <label for="ssn">Social Security Number</label>
+    <input type="text" id="ssn" name="ssn" minlength="9" maxlength="9" required>
+
+    <label for="medicare_card">Medicare Card</label>
+    <input type="text" id="medicare_card" name="medicare_card" minlength="11" maxlength="11" required> 
+
+    <label for="phone_number">Phone Number:</label>
+    <input type="text" id="phone_number" name="phone_number" minlength="10" maxlength="10" required>
+
+    <label for="address">Address</label>
+    <input type="text" id="address" name="address" maxlength="200" required>
+
+    <label for="city">City</label>
+    <input type="text" id="city" name="city" maxlength="50" required>
+
+    <label for="province">Province</label>
+    <input type="text" id="province" name="province" maxlength="50" required>
+
+    <label for="city">City</label>
+    <input type="text" id="city" name="city" maxlength="50" required>
+
+    <label for="postal_code">Postal Code</label>
+    <input type="text" id="postal_code" name="postal_code" maxlength="10" required>
+
+    <button type="submit">Add Club Member</button>
+  </form>
+
+  <script>
+    document.getElementById('addClubMemberForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const formData = {
+        first_name: document.getElementById('first_name').value,
+        last_name: document.getElementById('last_name').value,
+        age: document.getElementById('age').value,
+        date_of_birth: document.getElementById('date_of_birth').value,
+        phone_number: document.getElementById('phone_number').value,
+        member_status: document.getElementById('member_status').value
+      };
+
+      fetch('/clubmembers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert('Club member added successfully!');
+        // Redirect back to the club members page
+        window.location.href = 'clubmembers.html';
+      })
+      .catch(error => {
+        alert('Error adding club member: ' + error);
+      });
+    });
+  </script>
+</body>
+</html>

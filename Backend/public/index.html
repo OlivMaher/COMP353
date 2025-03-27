@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Database GUI Dashboard</title>
+  <style>
+    /* Basic Reset & Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f2f2f2;
+      color: #333;
+    }
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+    }
+    nav {
+      background-color: #444;
+      padding: 10px;
+      text-align: center;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+      font-size: 16px;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    section {
+      background-color: #fff;
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 800px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      padding: 10px 0;
+    }
+    li a {
+      color: #007acc;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    li a:hover {
+      text-decoration: underline;
+    }
+    footer {
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MYVC Database Dashboard</h1>
+  </header>
+  
+  <!-- Hero Section -->
+  <section id="hero">
+    <h2>Welcome</h2>
+    <p>Manage The Montreal Youth Volleyball Club</p>
+  </section>
+  
+  <!-- API Endpoints Section -->
+  <section id="api-endpoints">
+    <h2>Tables</h2>
+    <ul>
+      <li>
+        <a href="./clubmembers.html">Club Members</a> - View, add, update, and delete club member records.
+      </li>
+      <li>
+        <a href="./familymember.html">Family Members</a> - Manage family member data and relationships.
+      </li>
+      <li>
+        <a href="./location.html">Locations</a> - Access and manage location information.
+      </li>
+      <li>
+        <a href="./payment.html">Payments</a> - Track payment transactions and details.
+      </li>
+      <li>
+        <a href="./personnel.html">Personnel</a> - Access and manage staff records.
+      </li>
+    </ul>
+  </section>
+</body>
+</html>

@@ -1,12 +1,14 @@
 const express = require('express');
-const database = require('./database.js')
+const database = require('./database.js');
 const app = express();
-app.use(express.json())
+app.use(express.json());
 const PORT = 3000;
+const path = require('path');
+app.use(express.static(path.join(__dirname,'public')));
 
 app.listen(PORT, (error) =>{
     if(!error)
-        console.log("Server is Successfully Running, and App is listening on port "+ PORT)
+        console.log("Server is Successfully Running, and App is listening on http://localhost:"+ PORT)
     else 
         console.log("Error occurred, server can't start", error);
     }
@@ -15,14 +17,19 @@ app.listen(PORT, (error) =>{
 // -- Club Member APIs -- 
 // ----------------------
 // ----------------------
-app.get('/clubmembers', (req,res) => {
-    database.query('SELECT * FROM Club_Member', (err, results) =>{
-        if (err){
-            return res.status(500).json({error: err.message});
-        }
-        res.json(results);
+app.get('/clubmembers', (req, res) => {
+    const sql = `
+      SELECT c.*, CONCAT(f.first_name, ' ', f.last_name) AS family_member_name
+      FROM Club_Member c
+      LEFT JOIN Family_Member f ON c.family_member_id = f.family_member_id
+    `;
+    database.query(sql, (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json(results);
     });
-});
+  });
 // Select Club Member based on ID
 app.get('/clubmembers/:id', (req, res) => {
     const memberid = req.params.id;
@@ -115,7 +122,13 @@ app.delete('/clubmembers/:id', (req,res) =>{
 // ------------------------
 // ------------------------
 app.get('/familymember', (req,res) => {
-    database.query('SELECT * FROM Family_Member', (err, results) => {
+    const sql = `
+      SELECT f.*, l.name AS location_name
+      FROM Family_Member f
+      LEFT JOIN Location l ON f.location_id = l.location_id
+    `;
+
+    database.query(sql, (err, results) => {
         if(err){
             return res.status(500).json({error: err.message});
         }

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Family Members</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f2f2f2; }
+    h1 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #eee; }
+    nav { text-align: center; margin-bottom: 20px; }
+    nav a { text-decoration: none; color: #007acc; margin: 0 10px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="clubmembers.html">Club Members</a>
+    <a href="location.html">Locations</a>
+    <a href="payment.html">Payments</a>
+    <a href="personnel.html">Personnel</a>
+  </nav>
+  <h1>Family Members</h1>
+  <div id="data"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('/familymember')
+        .then(response => response.json())
+        .then(data => {
+          if (!data || data.length === 0) {
+            document.getElementById('data').textContent = 'No family members found.';
+            return;
+          }
+          const keysToShow = ['family_member_id','first_name','last_name','date_of_birth','phone_number','email_address','location_name'];
+          const keyName = ['ID', 'First Name', 'Last Name', 'Date Of Birth', 'Phone Number', 'Email Address','Location'];
+          var table = document.createElement('table');
+          var thead = document.createElement('thead');
+          var headerRow = document.createElement('tr');
+          keysToShow.forEach(function(key,index) {
+            var th = document.createElement('th');
+            th.textContent = keyName[index];
+            headerRow.appendChild(th);
+          });
+          thead.appendChild(headerRow);
+          table.appendChild(thead);
+          var tbody = document.createElement('tbody');
+          data.forEach(function(item) {
+            var row = document.createElement('tr');
+            keysToShow.forEach(function(key) {
+              var td = document.createElement('td');
+              if (key === 'date_of_birth'){
+                td.textContent = new Date(item[key]).toISOString().split('T')[0];
+              }
+              else{
+                td.textContent = item[key];
+              }
+              row.appendChild(td);
+            });
+            tbody.appendChild(row);
+          });
+          table.appendChild(tbody);
+          document.getElementById('data').appendChild(table);
+        })
+        .catch(error => {
+          document.getElementById('data').textContent = 'Error fetching data: ' + error;
+        });
+    });
+  </script>
+</body>
+</html>
