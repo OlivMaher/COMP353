@@ -12,6 +12,7 @@
     th { background-color: #eee; }
     nav { text-align: center; margin-bottom: 20px; }
     nav a { text-decoration: none; color: #007acc; margin: 0 10px; }
+    #addButton { width: 20%; height: 40px; color: #007acc; margin-left: 0px;}
   </style>
 </head>
 <body>
@@ -21,8 +22,12 @@
     <a href="familymember.html">Family Members</a>
     <a href="location.html">Locations</a>
     <a href="personnel.html">Personnel</a>
+    <a href="stats.html">Stats</a>
   </nav>
   <h1>Payments</h1>
+  <div id="widgets">
+    <button type="button" id="addButton" onclick="window.location.href='./addpayment.html'">Add Payment</button>
+  </div>
   <div id="data"></div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -33,12 +38,15 @@
             document.getElementById('data').textContent = 'No payments found.';
             return;
           }
+          const keysToShow = ['payment_id', 'club_member_id','club_member_name','payment_date','amount_paid','method','membership_year','installment_number'];
+          const keyName = ['ID','Club Member ID','Club Member Name', 'Date', 'Amount Paid','Transaction Method', 'Membership Year', 'Installment Number'];
+
           var table = document.createElement('table');
           var thead = document.createElement('thead');
           var headerRow = document.createElement('tr');
-          Object.keys(data[0]).forEach(function(key) {
+          keysToShow.forEach(function(key,index) {
             var th = document.createElement('th');
-            th.textContent = key;
+            th.textContent = keyName[index];
             headerRow.appendChild(th);
           });
           thead.appendChild(headerRow);
@@ -46,9 +54,13 @@
           var tbody = document.createElement('tbody');
           data.forEach(function(item) {
             var row = document.createElement('tr');
-            Object.values(item).forEach(function(value) {
+            keysToShow.forEach(function(key) {
               var td = document.createElement('td');
-              td.textContent = value;
+              if (key === 'payment_date'){
+              td.textContent = new Date(item[key]).toISOString().split('T')[0];
+            } else {
+              td.textContent = item[key];
+            }
               row.appendChild(td);
             });
             tbody.appendChild(row);

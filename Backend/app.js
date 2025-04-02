@@ -33,7 +33,14 @@ app.get('/clubmembers', (req, res) => {
 // Select Club Member based on ID
 app.get('/clubmembers/:id', (req, res) => {
     const memberid = req.params.id;
-    database.query('SELECT * FROM Club_Member WHERE club_member_id = ?', [memberid], (err,results) =>{
+    const sql = `
+      SELECT c.*, CONCAT(f.first_name, ' ', f.last_name) AS family_member_name
+      FROM Club_Member c
+      LEFT JOIN Family_Member f ON c.family_member_id = f.family_member_id
+      WHERE club_member_id = ?
+    `;
+
+    database.query(sql, [memberid], (err,results) =>{
         if(err){
             return res.status(500).json({error: err.message});
         }
@@ -107,16 +114,23 @@ app.post('/clubmembers', (req,res) => {
         res.status(201).json({ message:'New Club Member created', insertedId: results.insertedId})
     });
 });
-// Delete a club member
-app.delete('/clubmembers/:id', (req,res) =>{
+
+app.delete('/clubmembers/:id', (req, res) => {
     const memberid = req.params.id;
-    database.query('DELETE FROM Club_Member WHERE club_member_id = ?', [memberid], (err,results) =>{
-        if(err){
-            return res.status(500).json({error: err.message})
+    // First, delete child Payment records
+    database.query('DELETE FROM Payment WHERE club_member_id = ?', [memberid], (err, paymentResults) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      // Now, delete the Club Member
+      database.query('DELETE FROM Club_Member WHERE club_member_id = ?', [memberid], (err, memberResults) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
         }
-        res.json({message:'Club Member Deleted'})
+        res.json({ message: 'Club Member and associated Payments deleted' });
+      });
     });
-});
+  });
 
 // -- Family Member APIs --
 // ------------------------
@@ -138,7 +152,14 @@ app.get('/familymember', (req,res) => {
 // Retrieve a specific family member
 app.get('/familymember/:id', (req,res) =>{
     const memberid = req.params.id;
-    database.query('SELECT * FROM Family_Member WHERE family_member_id = ?', [memberid], (err,results) =>{
+    const sql = `
+      SELECT f.*, l.name AS location_name
+      FROM Family_Member f
+      LEFT JOIN Location l ON f.location_id = l.location_id
+      WHERE f.family_member_id = ?
+    `;
+
+    database.query(sql, [memberid], (err,results) =>{
         if(err){
             return res.status(500).json({error: err.message});
         }
@@ -152,10 +173,7 @@ app.post('/familymember', (req,res) => {
     const {
         first_name,
         last_name,
-        age,
         date_of_birth,
-        height,
-        weight,
         ssn,
         medicare_card,
         phone_number,
@@ -173,10 +191,7 @@ app.post('/familymember', (req,res) => {
         (
         first_name,
         last_name,
-        age,
-        date_of_birth,
-        height,
-        weight,
+        date_of_birth,    
         ssn,
         medicare_card,
         phone_number,
@@ -188,15 +203,12 @@ app.post('/familymember', (req,res) => {
         location_id,
         start_date
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [
         first_name,
         last_name,
-        age,
         date_of_birth,   
-        height,
-        weight,
         ssn,
         medicare_card,
         phone_number,
@@ -218,13 +230,50 @@ app.post('/familymember', (req,res) => {
 });
 
 // Deletes a Family Member
-app.delete('familymember/:id', (req,res)=>{
+app.delete('/familymember/:id', (req, res) => {
     const memberid = req.params.id;
-    database.query('DELETE FROM Family_Member WHERE family_member_id = ?',[memberid], (err,results) =>{
-        if(err){
-            return res.status(500).json({error: err.message});
+
+    // First, retrieve the club member IDs associated with this family member
+    const getClubMemberIdsSql = 'SELECT club_member_id FROM Club_Member WHERE family_member_id = ?';
+    database.query(getClubMemberIdsSql, [memberid], (err, clubMembers) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
         }
-        res.json({message:'Deleted Family Member'})
+        const clubMemberIds = clubMembers.map(cm => cm.club_member_id);
+
+        if (clubMemberIds.length > 0) {
+            // First, delete associated Payment records for these club members
+            const deletePaymentsSql = 'DELETE FROM Payment WHERE club_member_id IN (?)';
+            database.query(deletePaymentsSql, [clubMemberIds], (err, paymentResults) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                // Then, delete the club member records
+                const deleteClubSql = 'DELETE FROM Club_Member WHERE family_member_id = ?';
+                database.query(deleteClubSql, [memberid], (err, clubResults) => {
+                    if (err) {
+                        return res.status(500).json({ error: err.message });
+                    }
+                    // Finally, delete the family member record
+                    const deleteFamilySql = 'DELETE FROM Family_Member WHERE family_member_id = ?';
+                    database.query(deleteFamilySql, [memberid], (err, familyResults) => {
+                        if (err) {
+                            return res.status(500).json({ error: err.message });
+                        }
+                        res.json({ message: 'Deleted Family Member along with associated Club Members and Payments' });
+                    });
+                });
+            });
+        } else {
+            // No associated club members, so delete the family member directly
+            const deleteFamilySql = 'DELETE FROM Family_Member WHERE family_member_id = ?';
+            database.query(deleteFamilySql, [memberid], (err, familyResults) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                res.json({ message: 'Deleted Family Member (no associated club members)' });
+            });
+        }
     });
 });
 
@@ -232,6 +281,7 @@ app.delete('familymember/:id', (req,res)=>{
 // -------------------
 // -------------------
 app.get('/location', (req,res) => {
+    
     database.query('SELECT * FROM Location', (err,results) => {
         if(err){
             return res.status(500).json({error: err.message});
@@ -312,7 +362,13 @@ app.delete('/Location/:id', (req,res) =>{
 // ------------------
 // ------------------
 app.get('/payment', (req, res) => {
-    database.query('SELECT * FROM Payment', (err,results) => {
+    const sql = `
+    SELECT p.*, CONCAT(c.first_name, ' ', c.last_name) as club_member_name
+    FROM Payment p
+    LEFT JOIN Club_Member c on c.club_member_id = p.club_member_id
+    `;
+
+    database.query(sql, (err,results) => {
         if(err){
             return res.status(500).json({error: err.message});
         }
@@ -337,28 +393,27 @@ app.post('/payment', (req,res) => {
         method,
         membership_year,
         installment_number
-    } = req.params;
+    } = req.body;
 
     const sql = `
-        INSERT INTO Payment
-        (
-            club_member_id,
-            payment_date,
-            amount_paid,
-            method,
-            membership_year,
-            installment_number
-        )
-        Values(?, ?, ?, ?, ?, ?)
-    `;
-    const values = {
+    INSERT INTO Payment (
         club_member_id,
         payment_date,
         amount_paid,
         method,
         membership_year,
         installment_number
-    };
+    ) VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    const values = [
+        club_member_id,
+        payment_date,
+        amount_paid,
+        method,
+        membership_year,
+        installment_number
+    ];
     database.query(sql, values, (err, results) =>{
         if(err){
             return res.status(500).json({error: err.message});
@@ -371,7 +426,12 @@ app.post('/payment', (req,res) => {
 // --------------------
 // --------------------
 app.get('/personnel', (req, res) => {
-    database.query('SELECT * FROM Personnel', (err, results) => {
+    const sql = `
+        SELECT p.*, l.name as location_name
+        FROM Personnel p
+        LEFT JOIN Location l on l.location_id = p.location_id
+    `;
+    database.query(sql, (err, results) => {
         if(err){
             return res.status(500).json({error: err.message});
         }

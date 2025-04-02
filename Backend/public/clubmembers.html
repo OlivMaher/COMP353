@@ -13,8 +13,9 @@
     nav { text-align: center; margin-bottom: 20px; }
     nav a { text-decoration: none; color: #007acc; margin: 0 10px; }
     input { width: 20%; height: 30px;}
-    button { width: 20%; color: #007acc}
+    #addButton { width: 20%; height: 40px; color: #007acc; margin-left: 0px;}
     #widgets { display: flex; flex-direction: column; gap: 10px;}
+    button { margin-right: 10px; margin-left: 10px;}
   </style>
 </head>
 <body>
@@ -24,10 +25,11 @@
     <a href="location.html">Locations</a>
     <a href="payment.html">Payments</a>
     <a href="personnel.html">Personnel</a>
+    <a href="stats.html">Stats</a>
   </nav>
   <h1>Club Members</h1>
   <div id="widgets">
-    <button type="button" onclick="window.location.href='./addClubMember.html'">Add a new Member</button>
+    <button type="button" id='addButton' onclick="window.location.href='./addClubMember.html'">Add a new Member</button>
     <input type="text" id="filter" placeholder="Filter Club Members by Name">
   </div>
   <div id="data"></div>
@@ -35,15 +37,15 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       let allData = [];
-
+  
       function renderTable(data) {
         // Clear any existing table
         document.getElementById('data').innerHTML = '';
-
+  
         const keysToShow = ['club_member_id','first_name','last_name','age','date_of_birth','phone_number', 'member_status', 'family_member_name'];
         const keyName = ['ID', 'First Name', 'Last Name', 'Age', 'Date Of Birth', 'Phone Number', 'Membership Status', 'Family Member'];
         var table = document.createElement('table');
-
+  
         var thead = document.createElement('thead');
         var headerRow = document.createElement('tr');
         keysToShow.forEach(function(key, index) {
@@ -51,9 +53,13 @@
           th.textContent = keyName[index];
           headerRow.appendChild(th);
         });
+        // Add header for the actions column
+        var thAction = document.createElement('th');
+        thAction.textContent = "Actions";
+        headerRow.appendChild(thAction);
         thead.appendChild(headerRow);
         table.appendChild(thead);
-
+  
         var tbody = document.createElement('tbody');
         data.forEach(function(item) {
           var row = document.createElement('tr');
@@ -66,12 +72,48 @@
             }
             row.appendChild(td);
           });
+          
+          var tdAction = document.createElement('td');
+
+          var viewButton = document.createElement('button');
+          viewButton.textContent = 'View';
+          viewButton.addEventListener('click', function(){
+            window.location.href = 'viewclubmember.html?id=' + item.club_member_id;
+          });
+          tdAction.appendChild(viewButton);
+
+
+          // Remove button
+          var removeButton = document.createElement('button');
+          removeButton.textContent = "Remove";
+          removeButton.addEventListener('click', function(){
+            if(confirm("Are you sure you want to remove this member?")){
+              fetch(`/clubmembers/${item.club_member_id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(result => {
+                  alert("Member removed.");
+                  // Refresh the table after deletion
+                  fetch('/clubmembers')
+                    .then(res => res.json())
+                    .then(newData => {
+                      allData = newData;
+                      renderTable(allData);
+                    });
+                })
+                .catch(error => {
+                  alert("Error removing member: " + error);
+                });
+            }
+          });
+          tdAction.appendChild(removeButton);
+          row.appendChild(tdAction);
+  
           tbody.appendChild(row);
         });
         table.appendChild(tbody);
         document.getElementById('data').appendChild(table);
       }
-
+  
       // Fetch the full dataset
       fetch('/clubmembers')
         .then(response => response.json())
@@ -86,14 +128,14 @@
         .catch(error => {
           document.getElementById('data').textContent = 'Error fetching data: ' + error;
         });
-
+  
       // Filter the table whenever the input changes
       document.getElementById('filter').addEventListener('input', function(e) {
         const filterText = e.target.value.toLowerCase();
         const filteredData = allData.filter(member => {
           return member.first_name.toLowerCase().includes(filterText) ||
-                 member.last_name.toLowerCase().includes(filterText) ||
-                 (member.first_name.toLowerCase().includes(filterText.split(" ")[0]) && member.last_name.toLowerCase().includes(filterText).split(" ")[1])
+                 member.last_name.toLowerCase().includes(filterText) || 
+                 (member.first_name.toLowerCase() + ' ' +member.last_name.toLowerCase()).includes(filterText);
         });
         renderTable(filteredData);
       });

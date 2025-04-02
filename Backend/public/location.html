@@ -21,6 +21,7 @@
     <a href="familymember.html">Family Members</a>
     <a href="payment.html">Payments</a>
     <a href="personnel.html">Personnel</a>
+    <a href="stats.html">Stats</a>
   </nav>
   <h1>Locations</h1>
   <div id="data"></div>
@@ -36,21 +37,41 @@
           var table = document.createElement('table');
           var thead = document.createElement('thead');
           var headerRow = document.createElement('tr');
-          Object.keys(data[0]).forEach(function(key) {
+          const keysToShow = ['location_id','name','type','address','city','province','postal_code','phone_number','web_address','max_capacity'];
+          const keyName = ['ID','Name','Type','Address','City','Province','Postal Code','Phone Number','Website','Max Capacity'];
+          
+          keysToShow.forEach(function(key, index) {
             var th = document.createElement('th');
-            th.textContent = key;
+            th.textContent = keyName[index];
             headerRow.appendChild(th);
           });
+          // Add header for the actions column
+          var thAction = document.createElement('th');
+          thAction.textContent = "Actions";
+          headerRow.appendChild(thAction);
           thead.appendChild(headerRow);
           table.appendChild(thead);
+    
           var tbody = document.createElement('tbody');
           data.forEach(function(item) {
             var row = document.createElement('tr');
-            Object.values(item).forEach(function(value) {
+            keysToShow.forEach(function(key) {
               var td = document.createElement('td');
-              td.textContent = value;
+              td.textContent = item[key];
               row.appendChild(td);
             });
+    
+            // Create Actions cell with a View Members button
+            var tdAction = document.createElement('td');
+            var viewButton = document.createElement('button');
+            viewButton.textContent = "View Members";
+            viewButton.addEventListener('click', function() {
+              // Redirect to a page that shows all members associated with this location
+              window.location.href = 'viewmembersatlocation.html?location_id=' + item.location_id;
+            });
+            tdAction.appendChild(viewButton);
+            row.appendChild(tdAction);
+    
             tbody.appendChild(row);
           });
           table.appendChild(tbody);

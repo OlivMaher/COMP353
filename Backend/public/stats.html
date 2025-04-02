@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Statistics</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f2f2f2; }
+    h1, h2 { text-align: center; }
+    .stat-section { background-color: #fff; padding: 15px; margin: 15px auto; max-width: 600px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .stat { margin: 5px 0; }
+    nav { text-align: center; margin-bottom: 20px; }
+    nav a { text-decoration: none; color: #007acc; margin: 0 10px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="clubmembers.html">Club Members</a>
+    <a href="familymember.html">Family Members</a>
+    <a href="location.html">Locations</a>
+    <a href="payment.html">Payments</a>
+    <a href="personnel.html">Personnel</a>
+  </nav>
+  <h1>Statistics</h1>
+  <div id="stats" class="stat-section">
+    <h2>Loading stats...</h2>
+  </div>
+
+  <script>
+    // Fetch both club members and family members
+    Promise.all([
+      fetch('/clubmembers').then(res => res.json()),
+      fetch('/familymember').then(res => res.json())
+    ]).then(([clubData, familyData]) => {
+      // Calculate total club members and count per status
+      const totalClub = clubData.length;
+      const activeClub = clubData.filter(member => member.member_status.toLowerCase() === 'active').length;
+      const inactiveClub = clubData.filter(member => member.member_status.toLowerCase() === 'inactive').length;
+
+      // Count family members per location. (Assumes each family member record includes a location_name property)
+      const locationCounts = {};
+      familyData.forEach(member => {
+        const loc = member.location_name || 'Unknown';
+        locationCounts[loc] = (locationCounts[loc] || 0) + 1;
+      });
+
+      // Build HTML content for stats
+      let html = '';
+      html += `<div class="stat"><strong>Total Club Members:</strong> ${totalClub}</div>`;
+      html += `<div class="stat"><strong>Active Club Members:</strong> ${activeClub}</div>`;
+      html += `<div class="stat"><strong>Inactive Club Members:</strong> ${inactiveClub}</div>`;
+      html += `<hr>`;
+      html += `<h2>Family Members Per Location</h2>`;
+      html += `<ul>`;
+      for (const loc in locationCounts) {
+        html += `<li><strong>${loc}:</strong> ${locationCounts[loc]}</li>`;
+      }
+      html += `</ul>`;
+      
+      document.getElementById('stats').innerHTML = html;
+    }).catch(error => {
+      document.getElementById('stats').textContent = 'Error fetching stats: ' + error;
+    });
+  </script>
+</body>
+</html>

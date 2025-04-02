@@ -12,6 +12,9 @@
     th { background-color: #eee; }
     nav { text-align: center; margin-bottom: 20px; }
     nav a { text-decoration: none; color: #007acc; margin: 0 10px; }
+    #addButton { width: 20%; height: 40px; color: #007acc; margin-left: 0px;}
+    #widgets { display: flex; flex-direction: column; gap: 10px; }
+    #filter { width: 20%; height: 30px; }
   </style>
 </head>
 <body>
@@ -21,11 +24,56 @@
     <a href="familymember.html">Family Members</a>
     <a href="location.html">Locations</a>
     <a href="payment.html">Payments</a>
+    <a href="stats.html">Stats</a>
   </nav>
   <h1>Personnel</h1>
+  <div id="widgets">
+    <button type="button" id="addButton" onclick="window.location.href='addpersonnel.html'">Add Personnel</button>
+    <input type="text" id="filter" placeholder="Filter Personnel by Name">
+  </div>
   <div id="data"></div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      let allData = [];
+
+      function renderTable(data) {
+        // Clear any existing table
+        document.getElementById('data').innerHTML = '';
+
+        const keysToShow = ['personnel_id','first_name','last_name','date_of_birth','phone_number','email_address','role','mandate','location_name'];
+        const keyName = ['ID','First Name','Last Name','Date of Birth','Phone Number','Email','Role','Mandate','Location'];
+
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+
+        keysToShow.forEach(function(key, index) {
+          const th = document.createElement('th');
+          th.textContent = keyName[index];
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        data.forEach(function(item) {
+          const row = document.createElement('tr');
+          keysToShow.forEach(function(key) {
+            const td = document.createElement('td');
+            if (key === 'date_of_birth'){
+              td.textContent = new Date(item[key]).toISOString().split('T')[0];
+            } else {
+              td.textContent = item[key];
+            }
+            row.appendChild(td);
+          });
+          tbody.appendChild(row);
+        });
+        table.appendChild(tbody);
+        document.getElementById('data').appendChild(table);
+      }
+
+      // Fetch all personnel data
       fetch('/personnel')
         .then(response => response.json())
         .then(data => {
@@ -33,32 +81,23 @@
             document.getElementById('data').textContent = 'No personnel found.';
             return;
           }
-          var table = document.createElement('table');
-          var thead = document.createElement('thead');
-          var headerRow = document.createElement('tr');
-          Object.keys(data[0]).forEach(function(key) {
-            var th = document.createElement('th');
-            th.textContent = key;
-            headerRow.appendChild(th);
-          });
-          thead.appendChild(headerRow);
-          table.appendChild(thead);
-          var tbody = document.createElement('tbody');
-          data.forEach(function(item) {
-            var row = document.createElement('tr');
-            Object.values(item).forEach(function(value) {
-              var td = document.createElement('td');
-              td.textContent = value;
-              row.appendChild(td);
-            });
-            tbody.appendChild(row);
-          });
-          table.appendChild(tbody);
-          document.getElementById('data').appendChild(table);
+          allData = data;
+          renderTable(allData);
         })
         .catch(error => {
           document.getElementById('data').textContent = 'Error fetching data: ' + error;
         });
+
+      // Filter table when input changes
+      document.getElementById('filter').addEventListener('input', function(e) {
+        const filterText = e.target.value.toLowerCase();
+        const filteredData = allData.filter(person =>
+          person.first_name.toLowerCase().includes(filterText) ||
+          person.last_name.toLowerCase().includes(filterText) ||
+          (person.first_name + " " + person.last_name).toLocaleLowerCase().includes(filterText)
+        );
+        renderTable(filteredData);
+      });
     });
   </script>
 </body>

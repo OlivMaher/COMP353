@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Members at Location</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f2f2f2; }
+    h1 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #eee; }
+    nav { text-align: center; margin-bottom: 20px; }
+    nav a { text-decoration: none; color: #007acc; margin: 0 10px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="location.html">Locations</a>
+  </nav>
+  <h1>Members at Location</h1>
+  <div id="data"></div>
+  
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const locationId = urlParams.get('location_id');
+
+    if (locationId) {
+      // Assuming members are stored in the Family_Member table, and each member has a location_id field.
+      fetch('/familymember')
+        .then(response => response.json())
+        .then(data => {
+          // Filter for members at the given location_id
+          const filteredMembers = data.filter(member => member.location_id == locationId);
+          if (filteredMembers.length === 0) {
+            document.getElementById('data').textContent = 'No members found for this location.';
+            return;
+          }
+  
+          var table = document.createElement('table');
+          var thead = document.createElement('thead');
+          var headerRow = document.createElement('tr');
+          const keys = ['family_member_id', 'first_name', 'last_name', 'phone_number', 'email_address'];
+          const labels = ['ID', 'First Name', 'Last Name', 'Phone Number', 'Email'];
+  
+          keys.forEach((key, index) => {
+            let th = document.createElement('th');
+            th.textContent = labels[index];
+            headerRow.appendChild(th);
+          });
+          thead.appendChild(headerRow);
+          table.appendChild(thead);
+  
+          var tbody = document.createElement('tbody');
+          filteredMembers.forEach(member => {
+            let row = document.createElement('tr');
+            keys.forEach(key => {
+              let td = document.createElement('td');
+              td.textContent = member[key];
+              row.appendChild(td);
+            });
+            tbody.appendChild(row);
+          });
+          table.appendChild(tbody);
+          document.getElementById('data').appendChild(table);
+        })
+        .catch(error => {
+          document.getElementById('data').textContent = 'Error fetching members: ' + error;
+        });
+    } else {
+      document.getElementById('data').textContent = 'No location ID provided.';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>View Club Member</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f2f2f2; }
+    .detail { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    h1 { text-align: center; }
+    nav { text-align: center; margin-bottom: 20px; }
+    nav a { text-decoration: none; color: #007acc; margin: 0 10px; }
+    .info { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="clubmembers.html">Club Members</a>
+  </nav>
+  <h1>Club Member Details</h1>
+  <div id="memberDetails" class="detail">
+    <h2>Loading...</h2>
+  </div>
+  
+  <script>
+    // Get the query parameter for id, e.g., ?id=123
+    const urlParams = new URLSearchParams(window.location.search);
+    const memberId = urlParams.get('id');
+    
+    if (memberId) {
+      fetch('/clubmembers/' + memberId)
+        .then(response => response.json())
+        .then(data => {
+          const member = data[0];
+          if (!member) {
+            document.getElementById('memberDetails').innerHTML = '<p>No member found.</p>';
+            return;
+          }
+          let html = '<div class="info"><strong>ID:</strong> ' + member.club_member_id + '</div>';
+          html += '<div class="info"><strong>First Name:</strong> ' + member.first_name + '</div>';
+          html += '<div class="info"><strong>Last Name:</strong> ' + member.last_name + '</div>';
+          html += '<div class="info"><strong>Age:</strong> ' + member.age + '</div>';
+          html += '<div class="info"><strong>Date Of Birth:</strong> ' + new Date(member.date_of_birth).toISOString().split("T")[0] + '</div>';
+          html += '<div class="info"><strong>Height:</strong> ' + member.height + 'cm</div>';
+          html += '<div class="info"><strong>Weight:</strong> ' + member.weight + 'kg</div>';
+          html += '<div class="info"><strong>SSN:</strong> ' + member.ssn + '</div>';
+          html += '<div class="info"><strong>Medicare Card:</strong> ' + member.medicare_card + '</div>';
+          html += '<div class="info"><strong>Phone Number:</strong> ' + member.phone_number + '</div>';
+          html += '<div class="info"><strong>Address:</strong> ' + member.address + ', ' + member.city + ', ' + member.province + ', ' + member.postal_code + '</div>';
+          html += '<div class="info"><strong>Membership Status:</strong> ' + member.member_status + '</div>';
+          html += '<div class="info"><strong>Family Member:</strong> ' + (member.family_member_name) + '</div>';
+          // Add additional fields if needed
+          document.getElementById('memberDetails').innerHTML = html;
+        })
+        .catch(error => {
+          document.getElementById('memberDetails').innerHTML = '<p>Error fetching details: ' + error + '</p>';
+        });
+    } else {
+      document.getElementById('memberDetails').innerHTML = '<p>No member ID provided.</p>';
+    }
+  </script>
+</body>
+</html>
