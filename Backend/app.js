@@ -448,6 +448,74 @@ app.get('/personnel/:id', (req, res) =>{
     });
 });
 
+app.post('/personnel', (req, res) => {
+    const {
+      first_name,
+      last_name,
+      date_of_birth,
+      ssn,
+      medicare_card,
+      phone_number,
+      address,
+      city,
+      province,
+      postal_code,
+      email_address,
+      role,
+      mandate,
+      location_id,
+      start_date,
+      end_date
+    } = req.body;
+  
+    const sql = `
+      INSERT INTO Personnel
+        (first_name, last_name, date_of_birth, ssn, medicare_card, phone_number, address, city, province, postal_code, email_address, role, mandate, location_id, start_date, end_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const values = [
+      first_name,
+      last_name,
+      date_of_birth,
+      ssn,
+      medicare_card,
+      phone_number,
+      address,
+      city,
+      province,
+      postal_code,
+      email_address,
+      role,
+      mandate,
+      location_id,
+      start_date,
+      end_date || null
+    ];
+  
+    database.query(sql, values, (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.status(201).json({ message: 'New personnel created', insertedId: results.insertId });
+    });
+  });
+  app.delete('/personnel/:id', (req, res) => {
+    const personnelid = req.params.id;
+    const sql = 'DELETE FROM Personnel WHERE personnel_id = ?';
+    
+    database.query(sql, [personnelid], (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ message: 'Personnel not found' });
+      }
+      
+      res.json({ message: 'Personnel removed' });
+    });
+  });
+
 app.get('/familychildrelation', (req, res) => {
     database.query('SELECT * FROM family_child_relation', (err, results) => {
         if(err){

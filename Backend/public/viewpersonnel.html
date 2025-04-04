@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>View Personnel</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f2f2f2; }
+    nav { text-align: center; margin-bottom: 20px; }
+    nav a { text-decoration: none; color: #007acc; margin: 0 10px; }
+    h1 { text-align: center; }
+    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+    th { background-color: #eee; width: 30%; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="personnel.html">Personnel</a>
+  </nav>
+  <h1>View Personnel</h1>
+  <div class="container" id="personnelDetails">
+    <p>Loading personnel details...</p>
+  </div>
+
+  <script>
+    // Parse query parameter to get id
+    const params = new URLSearchParams(window.location.search);
+    const personnelId = params.get('id');
+
+    if (!personnelId) {
+      document.getElementById('personnelDetails').innerHTML = '<p>No personnel ID specified.</p>';
+      throw new Error('No personnel ID specified.');
+    }
+
+    // Fetch personnel details from API
+    fetch('/personnel/' + personnelId)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Personnel not found');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          data = data[0]; // use first item if array returned
+        }
+        
+        const container = document.getElementById('personnelDetails');
+        container.innerHTML = '';
+        
+        const table = document.createElement('table');
+        const tbody = document.createElement('tbody');
+
+        // List of fields to display and their labels
+        const fields = {
+          personnel_id: 'ID',
+          first_name: 'First Name',
+          last_name: 'Last Name',
+          date_of_birth: 'Date of Birth',
+          ssn: 'SSN',
+          medicare_card: 'Medicare Card',
+          phone_number: 'Phone Number',
+          address: 'Address',
+          city: 'City',
+          province: 'Province',
+          postal_code: 'Postal Code',
+          email_address: 'Email',
+          role: 'Role',
+          mandate: 'Mandate',
+          location_id: 'Location ID',
+          start_date: 'Start Date',
+          end_date: 'End Date'
+        };
+
+        for (const key in fields) {
+          const tr = document.createElement('tr');
+          const th = document.createElement('th');
+          th.textContent = fields[key];
+          const td = document.createElement('td');
+          let value = data[key] || '';
+          if (key === 'date_of_birth' || key === 'start_date' || key === 'end_date') {
+            value = value ? new Date(value).toISOString().split('T')[0] : '';
+          }
+          td.textContent = value;
+          tr.appendChild(th);
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+        container.appendChild(table);
+      })
+      .catch(error => {
+        document.getElementById('personnelDetails').innerHTML = '<p>Error fetching personnel details: ' + error.message + '</p>';
+      });
+  </script>
+</body>
+</html>

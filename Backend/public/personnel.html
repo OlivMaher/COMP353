@@ -52,6 +52,11 @@
           th.textContent = keyName[index];
           headerRow.appendChild(th);
         });
+        // New header for actions
+        const actionTh = document.createElement('th');
+        actionTh.textContent = 'Actions';
+        headerRow.appendChild(actionTh);
+        
         thead.appendChild(headerRow);
         table.appendChild(thead);
 
@@ -67,6 +72,39 @@
             }
             row.appendChild(td);
           });
+          // Create actions cell with View and Remove buttons
+          const actionTd = document.createElement('td');
+
+          const viewButton = document.createElement('button');
+          viewButton.textContent = 'View';
+          viewButton.addEventListener('click', function() {
+            window.location.href = 'viewpersonnel.html?id=' + item.personnel_id;
+          });
+          actionTd.appendChild(viewButton);
+
+          const removeButton = document.createElement('button');
+          removeButton.textContent = 'Remove';
+          removeButton.style.marginLeft = '5px';
+          removeButton.addEventListener('click', function() {
+            if (confirm("Are you sure you want to remove this personnel?")) {
+              fetch('/personnel/' + item.personnel_id, { method: 'DELETE' })
+                .then(response => {
+                  if (response.ok) {
+                    // Remove item from allData and re-render the table
+                    allData = allData.filter(person => person.personnel_id !== item.personnel_id);
+                    renderTable(allData);
+                  } else {
+                    alert("Failed to remove personnel");
+                  }
+                })
+                .catch(error => {
+                  alert("Error removing personnel: " + error);
+                });
+            }
+          });
+          actionTd.appendChild(removeButton);
+
+          row.appendChild(actionTd);
           tbody.appendChild(row);
         });
         table.appendChild(tbody);
@@ -94,7 +132,7 @@
         const filteredData = allData.filter(person =>
           person.first_name.toLowerCase().includes(filterText) ||
           person.last_name.toLowerCase().includes(filterText) ||
-          (person.first_name + " " + person.last_name).toLocaleLowerCase().includes(filterText)
+          (person.first_name + " " + person.last_name).toLowerCase().includes(filterText)
         );
         renderTable(filteredData);
       });

@@ -28,28 +28,38 @@
   </div>
 
   <script>
-    // Fetch both club members and family members
+    // Fetch club members, family members, personnel and payments in parallel
     Promise.all([
       fetch('/clubmembers').then(res => res.json()),
-      fetch('/familymember').then(res => res.json())
-    ]).then(([clubData, familyData]) => {
-      // Calculate total club members and count per status
+      fetch('/familymember').then(res => res.json()),
+      fetch('/personnel').then(res => res.json()),
+      fetch('/payment').then(res => res.json())
+    ]).then(([clubData, familyData, personnelData, paymentData]) => {
+      // Club Members stats
       const totalClub = clubData.length;
       const activeClub = clubData.filter(member => member.member_status.toLowerCase() === 'active').length;
       const inactiveClub = clubData.filter(member => member.member_status.toLowerCase() === 'inactive').length;
-
-      // Count family members per location. (Assumes each family member record includes a location_name property)
+      
+      // Family Members stats: count family members per location
       const locationCounts = {};
       familyData.forEach(member => {
         const loc = member.location_name || 'Unknown';
         locationCounts[loc] = (locationCounts[loc] || 0) + 1;
       });
-
+      
+      // Personnel stats
+      const totalPersonnel = personnelData.length;
+      
+      // Payment stats: count payments and sum total amount paid (assuming amount_paid is numeric)
+      const totalPayments = paymentData.length;
+      const sumPayments = paymentData.reduce((acc, p) => acc + Number(p.amount_paid || 0), 0);
+      
       // Build HTML content for stats
       let html = '';
       html += `<div class="stat"><strong>Total Club Members:</strong> ${totalClub}</div>`;
       html += `<div class="stat"><strong>Active Club Members:</strong> ${activeClub}</div>`;
       html += `<div class="stat"><strong>Inactive Club Members:</strong> ${inactiveClub}</div>`;
+      
       html += `<hr>`;
       html += `<h2>Family Members Per Location</h2>`;
       html += `<ul>`;
@@ -57,6 +67,13 @@
         html += `<li><strong>${loc}:</strong> ${locationCounts[loc]}</li>`;
       }
       html += `</ul>`;
+      
+      html += `<hr>`;
+      html += `<div class="stat"><strong>Total Personnel:</strong> ${totalPersonnel}</div>`;
+      
+      html += `<hr>`;
+      html += `<div class="stat"><strong>Total Payments:</strong> ${totalPayments}</div>`;
+      html += `<div class="stat"><strong>Total Amount Paid:</strong> $${sumPayments.toFixed(2)}</div>`;
       
       document.getElementById('stats').innerHTML = html;
     }).catch(error => {
