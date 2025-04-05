@@ -37,20 +37,31 @@
             document.getElementById('memberDetails').innerHTML = '<p>No member found.</p>';
             return;
           }
-          let html = '<div class="info"><strong>ID:</strong> ' + member.club_member_id + '</div>';
+          let html = '';
+          html += '<div class="info"><strong>ID:</strong> ' + member.club_member_id + '</div>';
           html += '<div class="info"><strong>First Name:</strong> ' + member.first_name + '</div>';
           html += '<div class="info"><strong>Last Name:</strong> ' + member.last_name + '</div>';
-          html += '<div class="info"><strong>Age:</strong> ' + member.age + '</div>';
           html += '<div class="info"><strong>Date Of Birth:</strong> ' + new Date(member.date_of_birth).toISOString().split("T")[0] + '</div>';
-          html += '<div class="info"><strong>Height:</strong> ' + member.height + 'cm</div>';
-          html += '<div class="info"><strong>Weight:</strong> ' + member.weight + 'kg</div>';
+          html += '<div class="info"><strong>Height:</strong> ' + member.height + ' cm</div>';
+          html += '<div class="info"><strong>Weight:</strong> ' + member.weight + ' kg</div>';
           html += '<div class="info"><strong>SSN:</strong> ' + member.ssn + '</div>';
           html += '<div class="info"><strong>Medicare Card:</strong> ' + member.medicare_card + '</div>';
           html += '<div class="info"><strong>Phone Number:</strong> ' + member.phone_number + '</div>';
           html += '<div class="info"><strong>Address:</strong> ' + member.address + ', ' + member.city + ', ' + member.province + ', ' + member.postal_code + '</div>';
           html += '<div class="info"><strong>Membership Status:</strong> ' + member.member_status + '</div>';
-          html += '<div class="info"><strong>Family Member:</strong> ' + (member.family_member_name) + '</div>';
-          // Add additional fields if needed
+          
+          // Display family member details if available
+          if (member.family_member_name) {
+            html += '<div class="info"><strong>Family Member:</strong> ' + member.family_member_name + '</div>';
+          }
+          
+          // Display relationship details if available
+          if (member.relationship_type) {
+            html += '<div class="info"><strong>Relationship Type:</strong> ' + member.relationship_type + '</div>';
+            html += '<div class="info"><strong>Relationship Start:</strong> ' + new Date(member.relationship_start).toISOString().split("T")[0] + '</div>';
+            html += '<div class="info"><strong>Relationship End:</strong> ' + (member.relationship_end ? new Date(member.relationship_end).toISOString().split("T")[0] : 'N/A') + '</div>';
+          }
+          
           document.getElementById('memberDetails').innerHTML = html;
         })
         .catch(error => {
@@ -62,3 +73,4 @@
   </script>
 </body>
 </html>
+``` 

@@ -52,7 +52,7 @@
       
       // Payment stats: count payments and sum total amount paid (assuming amount_paid is numeric)
       const totalPayments = paymentData.length;
-      const sumPayments = paymentData.reduce((acc, p) => acc + Number(p.amount_paid || 0), 0);
+      const sumPayments = paymentData.reduce((acc, p) => acc + Number(p.payment_amount || 0), 0);
       
       // Build HTML content for stats
       let html = '';

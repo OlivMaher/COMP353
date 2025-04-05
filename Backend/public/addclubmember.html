@@ -12,6 +12,7 @@
     button { margin-top: 15px; padding: 10px; background-color: #007acc; color: white; border: none; cursor: pointer; }
     nav { text-align: center; margin-bottom: 20px; }
     nav a { text-decoration: none; color: #007acc; margin: 0 10px; }
+    .section-heading { margin-top: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -21,14 +22,12 @@
   </nav>
   <h1>Add New Club Member</h1>
   <form id="addClubMemberForm">
+    <!-- Club Member Information -->
     <label for="first_name">First Name:</label>
     <input type="text" id="first_name" name="first_name" required>
 
     <label for="last_name">Last Name:</label>
     <input type="text" id="last_name" name="last_name" required>
-
-    <label for="age">Age:</label>
-    <input type="number" id="age" name="age" min="11" max="18" required>
 
     <label for="date_of_birth">Date of Birth:</label>
     <input type="date" id="date_of_birth" name="date_of_birth" required>
@@ -39,32 +38,56 @@
     <label for="weight">Weight:</label>
     <input type="number" id="weight" name="weight" min="0" required>
 
-    <label for="ssn">Social Security Number</label>
+    <label for="ssn">Social Security Number:</label>
     <input type="text" id="ssn" name="ssn" minlength="9" maxlength="9" required>
 
-    <label for="medicare_card">Medicare Card</label>
+    <label for="medicare_card">Medicare Card:</label>
     <input type="text" id="medicare_card" name="medicare_card" minlength="11" maxlength="11" required> 
 
     <label for="phone_number">Phone Number:</label>
     <input type="text" id="phone_number" name="phone_number" minlength="10" maxlength="10" required>
 
-    <label for="address">Address</label>
+    <label for="address">Address:</label>
     <input type="text" id="address" name="address" maxlength="200" required>
 
-    <label for="city">City</label>
+    <label for="city">City:</label>
     <input type="text" id="city" name="city" maxlength="50" required>
 
-    <label for="province">Province</label>
+    <label for="province">Province:</label>
     <input type="text" id="province" name="province" maxlength="50" required>
 
-    <label for="postal_code">Postal Code</label>
+    <label for="postal_code">Postal Code:</label>
     <input type="text" id="postal_code" name="postal_code" maxlength="10" required>
 
-    <label for="family_member_id">Family Member ID</label>
-    <input type="text" id="family_member_id" name="family_member_id" maxlength="10" required>
-
-    <label for="member_status">Membership Status</label>
+    <label for="member_status">Membership Status:</label>
     <input type="text" id="member_status" name="member_status" required>
+
+    <!-- Relationship Details Section -->
+    <div class="section-heading">Relationship Details</div>
+
+    <label for="family_member_id">Family Member ID:</label>
+    <input type="text" id="family_member_id" name="family_member_id" required>
+
+    <label for="relationship_type">Relationship Type:</label>
+    <select id="relationship_type" name="relationship_type" required>
+      <option value="">Select Relationship Type</option>
+      <option value="Father">Father</option>
+      <option value="Mother">Mother</option>
+      <option value="Grandfather">Grandfather</option>
+      <option value="Grandmother">Grandmother</option>
+      <option value="Uncle">Uncle</option>
+      <option value="Aunt">Aunt</option>
+      <option value="Tutor">Tutor</option>
+      <option value="Partner">Partner</option>
+      <option value="Friend">Friend</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label for="relationship_start">Relationship Start Date:</label>
+    <input type="date" id="relationship_start" name="relationship_start" required>
+
+    <label for="relationship_end">Relationship End Date (optional):</label>
+    <input type="date" id="relationship_end" name="relationship_end">
 
     <button type="submit">Add Club Member</button>
   </form>
@@ -76,16 +99,16 @@
       const memberStatusElem = document.getElementById('member_status');
       const memberStatus = memberStatusElem.value.trim().toLowerCase();
 
-        // Validate that member_status is 'active' or 'inactive'
+      // Validate that member_status is 'active' or 'inactive'
       if (memberStatus !== 'active' && memberStatus !== 'inactive') {
         alert("Membership Status must be either 'active' or 'inactive'.");
         memberStatusElem.focus();
         return;
-        }
+      }
+
       const formData = {
         first_name: document.getElementById('first_name').value,
         last_name: document.getElementById('last_name').value,
-        age: document.getElementById('age').value,
         date_of_birth: document.getElementById('date_of_birth').value,
         height: document.getElementById('height').value,
         weight: document.getElementById('weight').value,
@@ -96,8 +119,13 @@
         city: document.getElementById('city').value,
         province: document.getElementById('province').value,
         postal_code: document.getElementById('postal_code').value,
-        family_member_id: document.getElementById('family_member_id').value,
-        member_status: memberStatus
+        member_status: memberStatus,
+        relationship: {
+          family_member_id: document.getElementById('family_member_id').value,
+          relationship_type: document.getElementById('relationship_type').value,
+          start_date: document.getElementById('relationship_start').value,
+          end_date: document.getElementById('relationship_end').value
+        }
       };
 
       fetch('/clubmembers', {
